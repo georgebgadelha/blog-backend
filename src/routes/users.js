@@ -70,7 +70,6 @@ router.post('/', async (req, res) => {
       } catch (e) {
         return res.status(500).send({ status: 'error', msg: 'User could not be created!', error: e})
       }
-    
       return res.status(200).send({ status: 'OK', id: userID, password })
     }
   })
