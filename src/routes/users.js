@@ -52,27 +52,28 @@ router.post('/', async (req, res) => {
   let userID = ''
 
   let users = await db.collection('users').get()
-  users.forEach(doc => {
+  users.forEach(async (doc) => {
     let user = doc.data()
-    if(user.email == email)
-    return res.send({ status: 'error', msg: 'User already exist' })
+    if(user.email == email) {
+      return res.send({ status: 'error', msg: 'User already exist' })
+    } else {
+      try{
+        const doc = db.collection('users').doc()
+        const password = generatePassword()
+      
+        userID = doc._path.segments[1]
+      
+        doc.set({ fullname, email, password, phone})
+        .then((snap) => {
+          console.log('User created!')
+        })
+      } catch (e) {
+        return res.status(500).send({ status: 'error', msg: 'User could not be created!', error: e})
+      }
+    
+      return res.status(200).send({ status: 'OK', id: userID, password })
+    }
   })
-
-  try{
-    const doc = db.collection('users').doc()
-    const password = generatePassword()
-  
-    userID = doc._path.segments[1]
-  
-    doc.set({ fullname, email, password, phone})
-    .then((snap) => {
-      console.log('User created!')
-    })
-  } catch (e) {
-    return res.status(500).send({ status: 'error', msg: 'User could not be created!', error: e})
-  }
-
-  return res.status(200).send({ status: 'OK', id: userID, password })
 })
 
 router.put('/', async (req, res) => {
