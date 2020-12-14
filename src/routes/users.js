@@ -21,7 +21,7 @@ router.get('/', async (req, res) => {
   return res.status(200).send({ status: 'OK', data: usersArray})
 })
 
-router.get('/:id', async (req, res) => {
+router.get('/finduser/:id', async (req, res) => {
   let { id } = req.params
   let user = {}
   try{
@@ -34,9 +34,29 @@ router.get('/:id', async (req, res) => {
   return res.status(200).send({status: 'OK', data: user})
 })
 
+router.get('/auth', async (req, res) => {
+  let { email, password } = req.query
+
+  let users = await db.collection('users').get()
+  users.forEach(doc => {
+    let user = doc.data()
+    if(user.email == email && user.password == password)
+    return res.send({ id: doc.id, status: 'OK' })
+  })
+  return res.send({ status: 'error', msg: 'User could not be find!' })
+
+})
+
 router.post('/', async (req, res) => {
   let { fullname, email, phone } = req.body
   let userID = ''
+
+  let users = await db.collection('users').get()
+  users.forEach(doc => {
+    let user = doc.data()
+    if(user.email == email)
+    return res.send({ status: 'error', msg: 'User already exist' })
+  })
 
   try{
     const doc = db.collection('users').doc()
@@ -52,7 +72,7 @@ router.post('/', async (req, res) => {
     return res.status(500).send({ status: 'error', msg: 'User could not be created!', error: e})
   }
 
-  return res.status(200).send({ status: 'OK', id: userID})
+  return res.status(200).send({ status: 'OK', id: userID, password })
 })
 
 router.put('/', async (req, res) => {
