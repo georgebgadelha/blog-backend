@@ -90,7 +90,7 @@ router.put('/', async (req, res) => {
     user.id = userid
 
   } catch (e) {
-    return res.status(200).send({ status: 'error', msg: 'User could not be updated!', error: e })
+    return res.status(200).send({ status: 'error', msg: 'User could not be updated or doest not exist!', error: e })
   }
 
   return res.status(200).send({ status: 'OK', data: user })
@@ -103,7 +103,7 @@ router.delete('/', (req, res) => {
     db.collection('users').doc(id).delete()
     return res.status(200).send({ status: 'OK', msg: 'User deleted!' })
   } catch (e) {
-    return res.status(200).send({ error: 'User could not be deleted!', error: e })
+    return res.status(200).send({ status: 'error', msg: 'User could not be deleted or does not exist!', error: e })
   }
 })
 
