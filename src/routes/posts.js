@@ -5,7 +5,7 @@ const router = express.Router();
 
 router.get('/', async (req, res) => {
   let page = 1
-  if(req.query.page && req.query.page > 0) page = req.query.page
+  if (req.query.page && req.query.page > 0) page = req.query.page
   let postsArray = []
 
   try {
@@ -19,14 +19,14 @@ router.get('/', async (req, res) => {
     return res.status(500).send({ status: 'error', msg: 'Posts could not be listed!', error: e })
   }
 
-  if(postsArray.length === 0){
+  if (postsArray.length === 0) {
     return res.status(500).send({ status: 'error', msg: 'A página que está tentando ser encontrada não existe' })
   } else {
     return res.status(200).send({ status: 'OK', quantity: postsArray.length, data: postsArray })
   }
 })
 
-router.get('/:id', async (req, res) => {
+router.get('/findpost/:id', async (req, res) => {
   let { id } = req.params
   let post = {}
   try {
@@ -37,6 +37,28 @@ router.get('/:id', async (req, res) => {
   }
 
   return res.status(200).send({ status: 'OK', data: post })
+})
+
+router.get('/size', async (req, res) => {
+  db.collection('posts').get().then(snap => {
+    res.status(200).send({ length: snap.size });
+  });
+})
+
+router.get('/allpostsdate', async (req, res) => {
+  let postsArray = []
+  const posts = await db.collection('posts').orderBy('date', 'desc').get()
+  posts.forEach(doc => {
+    let post = doc.data()
+    post.id = doc.id
+    postsArray.push(post)
+  })
+
+  postsArray = postsArray.map(post => {
+    return { id: post.id, name: `${new Date(post.date).getFullYear()}-${new Date(post.date).getMonth()+1}-${new Date(post.date).getDate()} ${new Date(post.date).getHours()}:${new Date(post.date).getMinutes()}:${new Date(post.date).getSeconds()}`}
+  })
+
+  return res.status(200).send(postsArray);
 })
 
 router.post('/', async (req, res) => {
